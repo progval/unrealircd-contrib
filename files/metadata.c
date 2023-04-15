@@ -198,10 +198,10 @@ struct metadata_settings_s {
 } metadata_settings;
 
 ModuleHeader MOD_HEADER = {
-	"third/metadata",
+	"third/metadata-2",
 	"6.0",
-	"draft/metadata and draft/metadata-notify-2 cap",
-	"k4be",
+	"draft/metadata-2 and draft/metadata-notify-2 cap",
+	"val",
 	"unrealircd-6"
 };
 
