@@ -1078,6 +1078,10 @@ void metadata_send_all_for_user(Client *user, Client *client)
 
 int metadata_key_valid(const char *key)
 {
+	if (*key == ':') {
+		// Disallowed as the first character
+		return 0;
+	}
 	for( ; *key; key++)
 	{
 		if(*key >= 'a' && *key <= 'z')
@@ -1091,6 +1095,16 @@ int metadata_key_valid(const char *key)
 		return 0;
 	}
 	return 1;
+}
+
+// returned pointed should not be freed
+const char* sanitize_key(const char *key)
+{
+	if (*key == ':') {
+		return "*";
+	} else {
+		return key;
+	}
 }
 
 int metadata_check_perms(Client *user, Channel *channel, Client *client, const char *key, int mode)
@@ -1158,7 +1172,7 @@ CMD_FUNC(cmd_metadata_local)
 			{
 				if (!metadata_key_valid(key))
 				{
-					batched(sendto_one, client, batchid, STR_FAIL_KEY_INVALID, me.name, key);
+					batched(sendto_one, client, batchid, STR_FAIL_KEY_INVALID, me.name, sanitize_key(key));
 					continue;
 				}
 				if (channel)
@@ -1191,7 +1205,7 @@ CMD_FUNC(cmd_metadata_local)
 
 		if (!metadata_key_valid(key))
 		{
-			sendto_one(client, NULL, STR_FAIL_KEY_INVALID, me.name, key);
+			sendto_one(client, NULL, STR_FAIL_KEY_INVALID, me.name, sanitize_key(key));
 			return;
 		}
 
@@ -1230,7 +1244,7 @@ CMD_FUNC(cmd_metadata_local)
 				metadata_subscribe(key, client, 0);
 			} else
 			{
-				sendto_one(client, NULL, STR_FAIL_KEY_INVALID, me.name, key);
+				sendto_one(client, NULL, STR_FAIL_KEY_INVALID, me.name, sanitize_key(key));
 				continue;
 			}
 		}
@@ -1246,7 +1260,7 @@ CMD_FUNC(cmd_metadata_local)
 				metadata_subscribe(key, client, 1);
 			} else
 			{
-				sendto_one(client, NULL, STR_FAIL_KEY_INVALID, me.name, key);
+				sendto_one(client, NULL, STR_FAIL_KEY_INVALID, me.name, sanitize_key(key));
 				continue;
 			}
 		}
