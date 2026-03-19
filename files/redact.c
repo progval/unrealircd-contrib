@@ -170,7 +170,7 @@ CMD_FUNC(cmd_redact)
 	char *error;
 	int deleted, rejected_deletes;
 
-	if ((parc < 3) || BadPtr(parv[2]))
+	if ((parc < 3) || BadPtr(parv[1]) || BadPtr(parv[2]))
 	{
 		sendnumeric(client, ERR_NEEDMOREPARAMS, "REDACT");
 		return;
