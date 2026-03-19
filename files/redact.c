@@ -6,9 +6,9 @@
 /*** <<<MODULE MANAGER START>>>
 module
 {
-		documentation "Implements the draft IRCv3 message-redaction specification https://github.com/ircv3/ircv3-specifications/pull/524";
+		documentation "https://github.com/ircv3/ircv3-specifications/pull/524";
 		troubleshooting "In case of problems, contact val on irc.unrealircd.org.";
-		min-unrealircd-version "6.*";
+		min-unrealircd-version "6.1.2";
 		post-install-text {
 				"The module is installed. Now all you need to do is add a loadmodule line:";
 				"loadmodule \"third/redact\";";
@@ -26,8 +26,8 @@ module
 
 ModuleHeader MOD_HEADER = {
 	"third/redact",
-	"6.0",
-	"draft/message-redaction cap",
+	"6.1",
+	"Implements the draft IRCv3 message-redaction specification",
 	"val",
 	"unrealircd-6"
 };
@@ -134,7 +134,7 @@ MOD_INIT()
 	chan_access_pattern = "";
 	sender_can_redact = 0;
 
-	CommandAdd(modinfo->handle, "REDACT", cmd_redact, MAXPARA, CMD_USER|CMD_SERVER);
+	CommandAdd(modinfo->handle, "REDACT", cmd_redact, 3, CMD_USER|CMD_SERVER);
 	HookAdd(modinfo->handle, HOOKTYPE_CONFIGRUN, 0, redact_config_run);
 
 	memset(&c, 0, sizeof(c));
@@ -160,6 +160,7 @@ MOD_UNLOAD()
 	return MOD_SUCCESS;
 }
 
+/* REDACT <channel> <msgid> [reason] */
 CMD_FUNC(cmd_redact)
 {
 	HistoryFilter *filter = NULL;
@@ -169,7 +170,7 @@ CMD_FUNC(cmd_redact)
 	char *error;
 	int deleted, rejected_deletes;
 
-	if ((parc < 2) || BadPtr(parv[1]))
+	if ((parc < 3) || BadPtr(parv[2]))
 	{
 		sendnumeric(client, ERR_NEEDMOREPARAMS, "REDACT");
 		return;
@@ -241,7 +242,7 @@ CMD_FUNC(cmd_redact)
 		goto end;
 	}
 
-	if (parc >= 3) {
+	if (!BadPtr(parv[3])) {
 		/* Has a reason */
 		sendto_channel(channel, client, /* skip */ NULL, /* member_modes */ NULL,
 				   CAP_MESSAGE_REDACTION, SEND_ALL, /* mtags */ NULL,
