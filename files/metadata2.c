@@ -659,6 +659,11 @@ void metadata_free_list(struct metadata *metadata, const char *whose, Client *cl
 {
 	struct metadata *prev_metadata = metadata;
 	char *name;
+	char batchid[BATCHLEN+1];
+
+	generate_batch_id(batchid);
+
+	sendto_one(client, NULL, ":%s BATCH +%s metadata", me.name, batchid);
 	while(metadata)
 	{
 		name = metadata->name;
@@ -676,6 +681,7 @@ void metadata_free_list(struct metadata *metadata, const char *whose, Client *cl
 		}
 		safe_free(name);
 	}
+	sendto_one(client, NULL, ":%s BATCH -%s", me.name, batchid);
 }
 
 void metadata_channel_free(ModData *md)
