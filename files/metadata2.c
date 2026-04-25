@@ -1050,6 +1050,17 @@ void metadata_send_subscribtions(Client *client)
 		sendnumeric(client, RPL_METADATASUBS, subs->name);
 }
 
+void metadata_send_empty_for_channel(Channel *channel, Client *client)
+{
+	struct metadata *metadata;
+	char batchid[BATCHLEN+1];
+
+	generate_batch_id(batchid);
+
+	sendto_one(client, NULL, ":%s BATCH +%s metadata", me.name, batchid);
+	sendto_one(client, NULL, ":%s BATCH -%s", me.name, batchid);
+}
+
 void metadata_send_all_for_channel(Channel *channel, Client *client)
 {
 	struct metadata *metadata;
@@ -1060,6 +1071,17 @@ void metadata_send_all_for_channel(Channel *channel, Client *client)
 	sendto_one(client, NULL, ":%s BATCH +%s metadata", me.name, batchid);
 	for (metadata = CHANNEL_METADATA(channel); metadata; metadata = metadata->next)
 		batched(sendtaggednumeric, client, batchid, RPL_KEYVALUE, channel->name, metadata->name, "*", metadata->value);
+	sendto_one(client, NULL, ":%s BATCH -%s", me.name, batchid);
+}
+
+void metadata_send_empty_for_user(Client *user, Client *client)
+{
+	struct metadata *metadata;
+	char batchid[BATCHLEN+1];
+
+	generate_batch_id(batchid);
+
+	sendto_one(client, NULL, ":%s BATCH +%s metadata", me.name, batchid);
 	sendto_one(client, NULL, ":%s BATCH -%s", me.name, batchid);
 }
 
@@ -1189,7 +1211,7 @@ CMD_FUNC(cmd_metadata_local)
 		}
 		sendto_one(client, NULL, ":%s BATCH -%s", me.name, batchid);
 	} else if (!strcasecmp(cmd, "LIST"))
-	{ /* we're just not sending anything if there are no permissions */
+	{
 		CHECKREGISTERED_OR_DIE(client, return);
 		PROCESS_TARGET_OR_DIE(target, user, channel, return);
 		if (metadata_check_perms(user, channel, client, NULL, MODE_GET))
@@ -1198,6 +1220,11 @@ CMD_FUNC(cmd_metadata_local)
 				metadata_send_all_for_channel(channel, client);
 			else
 				metadata_send_all_for_user(user, client);
+		} else {
+			if (channel)
+				metadata_send_empty_for_channel(channel, client);
+			else
+				metadata_send_empty_for_user(user, client);
 		}
 	} else if (!strcasecmp(cmd, "SET"))
 	{
