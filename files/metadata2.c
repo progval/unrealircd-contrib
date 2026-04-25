@@ -1305,6 +1305,7 @@ CMD_FUNC(cmd_metadata_local)
 	{ /* the SYNC command is ignored, as we're using events to send out the queue - only validate the params */
 		CHECKREGISTERED_OR_DIE(client, return);
 		PROCESS_TARGET_OR_DIE(target, user, channel, return);
+		metadata_check_perms(user, channel, client, "*", MODE_GET);
 	} else
 	{
 		sendto_one(client, NULL, STR_FAIL_SUBCOMMAND_INVALID, me.name, cmd);
