@@ -673,7 +673,7 @@ void metadata_free_list(struct metadata *metadata, const char *whose, Client *cl
 		prev_metadata = metadata;
 		if(client && whose && *whose)
 		{ /* send out the data being removed, unless we're unloading the module */
-			sendnumeric(client, RPL_KEYVALUE, whose, name, "*", "");
+			sendnumeric(client, RPL_KEYNOTSET, whose, name);
 			if(*whose == '#')
 				channel_metadata_changed(find_channel(whose), name, NULL, client);
 			else
